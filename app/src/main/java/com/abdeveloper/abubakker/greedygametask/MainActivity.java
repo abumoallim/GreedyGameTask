@@ -145,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     
     private void initView() {
-        mTimeLineAdapter = new TimeLineAdapter(minuteArrayList,googleMap,MainActivity.this,reader);
+        mTimeLineAdapter = new TimeLineAdapter(minuteArrayList,googleMap,reader);
         mRecyclerView.setAdapter(mTimeLineAdapter);
     }
 

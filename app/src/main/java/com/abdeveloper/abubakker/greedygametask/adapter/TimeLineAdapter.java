@@ -7,14 +7,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import com.abdeveloper.abubakker.greedygametask.MainActivity;
 import com.abdeveloper.abubakker.greedygametask.R;
 import com.abdeveloper.abubakker.greedygametask.holder.TimeLineViewHolder;
 import com.abdeveloper.abubakker.greedygametask.model.ResponseMinute;
 import com.abdeveloper.abubakker.greedygametask.model.ResponseSecond;
 import com.appyvet.rangebar.RangeBar;
-import com.github.vipulasri.timelineview.TimelineView;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -37,6 +34,10 @@ import java.util.List;
 
 public class TimeLineAdapter extends RecyclerView.Adapter<TimeLineViewHolder> {
 
+    private final int TIMER_MAX_RUNNING_TIME = 70000;
+    private final int TIMER_INTERVAL = 1000;
+    private final int MAX_SECONDS = 60;
+
     private List<ResponseMinute> mFeedList;
     private Context mContext;
     private GoogleMap googleMap;
@@ -44,7 +45,7 @@ public class TimeLineAdapter extends RecyclerView.Adapter<TimeLineViewHolder> {
     private MyCountDownTimer countDownTimer;
     private Boolean isRunning = false;
 
-    public TimeLineAdapter(List<ResponseMinute> feedList, GoogleMap googleMap, MainActivity mainActivity, DatabaseReader reader) {
+    public TimeLineAdapter(List<ResponseMinute> feedList, GoogleMap googleMap,DatabaseReader reader) {
         mFeedList = feedList;
         this.googleMap = googleMap;
         this.reader = reader;
@@ -64,6 +65,8 @@ public class TimeLineAdapter extends RecyclerView.Adapter<TimeLineViewHolder> {
     @Override
     public void onBindViewHolder(final TimeLineViewHolder holder, int position) {
 
+        int SEEK_DEFAULT_VALUE = 0;
+        int HOUR = 1;
         //Fetching Minute
         ResponseMinute minute = mFeedList.get(position);
         //Fetching Seconds
@@ -73,11 +76,11 @@ public class TimeLineAdapter extends RecyclerView.Adapter<TimeLineViewHolder> {
         final Boolean clickable = mFeedList.get(position).getClickable();
 
         //Intializing value of RangeBar
-        holder.rangeSeekbar.setSeekPinByValue(0);
-        holder.rangeSeekbar.setSeekPinByIndex(0);
+        holder.rangeSeekbar.setSeekPinByValue(SEEK_DEFAULT_VALUE);
+        holder.rangeSeekbar.setSeekPinByIndex(SEEK_DEFAULT_VALUE);
 
         //Setting Time Duration
-        holder.mDate.setText(getDate(1, position, 0) + " - " + getDate(1, position, 59));
+        holder.mDate.setText(getDate(HOUR, position, 0) + " - " + getDate(HOUR, position, (MAX_SECONDS-1)));
 
 
         //Making single item enable at a time
@@ -107,7 +110,7 @@ public class TimeLineAdapter extends RecyclerView.Adapter<TimeLineViewHolder> {
                     googleMap.clear();
 
                     //adding delay to cover all latlong so considering 70 secs instead of 60
-                    startTimer(reader, holder, 70000, 1000, seconds);
+                    startTimer(reader, holder, TIMER_MAX_RUNNING_TIME, TIMER_INTERVAL, seconds);
 
                 } else {
 
@@ -157,7 +160,7 @@ public class TimeLineAdapter extends RecyclerView.Adapter<TimeLineViewHolder> {
     }
 
     private void removeAllClicks() {
-        for (int i = 0; i < 60; i++) {
+        for (int i = 0; i < MAX_SECONDS; i++) {
             mFeedList.get(i).setClickable(false);
         }
     }
@@ -248,7 +251,7 @@ public class TimeLineAdapter extends RecyclerView.Adapter<TimeLineViewHolder> {
         @Override
         public void onTick(long millisUntilFinished) {
             isRunning = true;
-            if (count < 60) {
+            if (count < MAX_SECONDS) {
                 holder.rangeSeekbar.setSeekPinByValue(count);
             }
             count++;
